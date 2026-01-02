@@ -170,7 +170,7 @@ func (c *ListEntriesCommand) Usage() string {
 }
 
 func (c *ListBookmarksCommand) Usage() string {
-	return ""
+	return "[OPTIONS]"
 }
 
 func main() {
