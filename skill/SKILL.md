@@ -7,6 +7,12 @@ description: Unified command-line interface for managing bookmarks (linkding) an
 
 A unified command-line interface for managing bookmarks (via Linkding) and feeds (via Miniflux).
 
+## Critical Notes
+
+1. **Pagination**: All `list` commands return `{total, items}`. Default limit is 10, default offset is 0. Use `--limit` and `--offset` for pagination.
+2. **Output filtering**: Use `--jq` for inline filtering or `--json "field1,field2"` to select specific fields.
+3. **Quote handling**: For values with double quotes, wrap in single quotes: `--notes 'Title: "Example"'`
+
 ## Commands
 
 ```bash
@@ -22,38 +28,75 @@ Use `--help` on any command for options.
 
 ## Workflows
 
-### Get unread Entries
+### Check Total Results Before Processing
+
+Before processing results, verify you have all of them:
 
 ```bash
-cli list entries --status unread --jq ".[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
+cli list entries --status unread --jq '{total: .total, returned: (.items | length)}'
 ```
 
-### Get More Entries by Feed
-
-When you have the feed ID and title from a previous query, use `--feed-id` to get more entries from that specific feed:
+If `total > returned`, either increase the limit or paginate with offset:
 
 ```bash
-cli list entries --feed-id 42 --limit 20 --jq ".[] | { id, url, title, published_at }"
+# Increase limit to get all results
+cli list entries --status unread --limit 100
+
+# Or paginate through results
+cli list entries --status unread --limit 10 --offset 0
+cli list entries --status unread --limit 10 --offset 10
+cli list entries --status unread --limit 10 --offset 20
 ```
+
+### List Unread Entries
+
+Get unread entries with feed context:
+
+```bash
+cli list entries --status unread --jq ".items[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
+```
+
+Output fields:
+- `id`: Entry ID (use for marking read/starred)
+- `url`: Original article URL
+- `feed_id`, `feed_title`: Source feed info for grouping/filtering
+
+### List Entries by Feed
+
+When you have a `feed_id` from a previous query, fetch more entries from that feed:
+
+```bash
+cli list entries --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
+```
+
+### Find Starred/Read Entries by Date
+
+Use `changed_at` to filter by when entries were starred or marked read:
+
+```bash
+cli list entries --starred --status read --limit 100 --json "id,url,title,changed_at,starred" | jq '.items[] | select(.changed_at >= "2025-12-26")'
+```
+
+Note: `changed_at` reflects when the entry was last modified (starred, read status changed), not publication date.
 
 ### Add a Feed
-
-Before subscribing to a new feed, verify the URL points to a valid RSS/Atom feed to prevent rate limiting issues:
 
 ```bash
 cli add feed <url>
 ```
 
-### Add Bookmark with Notes
+The URL must point to a valid RSS/Atom feed.
 
-When adding bookmarks with notes that contain double quotes, use single quotes around the entire notes value:
+### Add a Bookmark
 
+Basic:
+```bash
+cli add bookmark <url>
+```
+
+With metadata:
 ```bash
 cli add bookmark <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
 ```
 
-Alternatively, escape the inner double quotes:
-
-```bash
-cli add bookmark <url> --notes "Title: \"Some Title\"" --tags "tag1 tag2"
-```
+Tags are space-separated within the quoted string.

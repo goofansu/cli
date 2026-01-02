@@ -20,14 +20,7 @@ func Output(data any, fields string, jqExpr string) error {
 	}
 
 	if jqExpr != "" {
-		var dataForJQ any = outputData
-		if items, ok := outputData.(map[string]any); ok {
-			if v, exists := items["items"]; exists {
-				dataForJQ = v
-			}
-		}
-
-		jsonData, err := json.Marshal(dataForJQ)
+		jsonData, err := json.Marshal(outputData)
 		if err != nil {
 			return err
 		}
@@ -85,26 +78,25 @@ func filterFields(data any, fields string) (map[string]any, error) {
 		return nil, err
 	}
 
-	result := make(map[string]any)
-	fieldList := strings.Split(fields, ",")
-
-	switch v := raw.(type) {
-	case []any:
-		if len(v) == 0 {
-			return map[string]any{"items": []any{}}, nil
-		}
-		items := make([]map[string]any, len(v))
-		for i, item := range v {
-			if m, ok := item.(map[string]any); ok {
-				items[i] = filterMapFields(m, fieldList)
-			}
-		}
-		return map[string]any{"items": items}, nil
-	case map[string]any:
-		return filterMapFields(v, fieldList), nil
-	default:
-		return result, nil
+	v, ok := raw.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("expected map with 'items' field")
 	}
+
+	items, ok := v["items"].([]any)
+	if !ok {
+		return nil, fmt.Errorf("expected 'items' to be an array")
+	}
+
+	fieldList := strings.Split(fields, ",")
+	filteredItems := make([]map[string]any, len(items))
+	for i, item := range items {
+		if m, ok := item.(map[string]any); ok {
+			filteredItems[i] = filterMapFields(m, fieldList)
+		}
+	}
+
+	return map[string]any{"total": v["total"], "items": filteredItems}, nil
 }
 
 func filterMapFields(m map[string]any, fields []string) map[string]any {

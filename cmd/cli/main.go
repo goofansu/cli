@@ -76,6 +76,7 @@ type ListEntriesCommand struct {
 	BaseCommand
 	JSONOutputOptions
 	Limit   int    `long:"limit" description:"Maximum number of results" default:"10"`
+	Offset  int    `long:"offset" description:"Number of results to skip" default:"0"`
 	Search  string `long:"search" description:"Search query text"`
 	Status  string `long:"status" value-name:"status" description:"Filter by entry status (read, unread, removed)" default:"unread"`
 	Starred bool   `long:"starred" description:"Filter by starred entries"`
@@ -86,6 +87,7 @@ type ListBookmarksCommand struct {
 	BaseCommand
 	JSONOutputOptions
 	Limit  int    `long:"limit" description:"Maximum number of results" default:"10"`
+	Offset int    `long:"offset" description:"Number of results to skip" default:"0"`
 	Search string `long:"search" description:"Search query text"`
 }
 
@@ -126,6 +128,7 @@ func (c *ListEntriesCommand) Execute(_ []string) error {
 		FeedID:  c.FeedID,
 		Search:  c.Search,
 		Limit:   c.Limit,
+		Offset:  c.Offset,
 		Status:  c.Status,
 		Starred: starred,
 		JSON:    c.JSON,
@@ -137,10 +140,11 @@ func (c *ListEntriesCommand) Execute(_ []string) error {
 
 func (c *ListBookmarksCommand) Execute(_ []string) error {
 	opts := app.ListBookmarksOptions{
-		Query: c.Search,
-		Limit: c.Limit,
-		JSON:  c.JSON,
-		JQ:    c.JQ,
+		Query:  c.Search,
+		Limit:  c.Limit,
+		Offset: c.Offset,
+		JSON:   c.JSON,
+		JQ:     c.JQ,
 	}
 	return c.App.ListBookmarks(opts)
 }

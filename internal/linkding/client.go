@@ -11,8 +11,9 @@ type CreateBookmarkOptions struct {
 }
 
 type ListBookmarksOptions struct {
-	Query string
-	Limit int
+	Query  string
+	Limit  int
+	Offset int
 }
 
 func CreateBookmark(endpoint, apiKey string, opts CreateBookmarkOptions) (*api.Bookmark, error) {
@@ -30,8 +31,9 @@ func CreateBookmark(endpoint, apiKey string, opts CreateBookmarkOptions) (*api.B
 func ListBookmarks(endpoint, apiKey string, opts ListBookmarksOptions) (*api.ListBookmarksResponse, error) {
 	client := api.NewClient(endpoint, apiKey)
 	return client.ListBookmarks(api.ListBookmarksParams{
-		Query: opts.Query,
-		Limit: opts.Limit,
+		Query:  opts.Query,
+		Limit:  opts.Limit,
+		Offset: opts.Offset,
 	})
 }
 

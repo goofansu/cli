@@ -14,15 +14,17 @@ type ListEntriesOptions struct {
 	Limit   int
 	Status  string
 	Starred string
+	Offset  int
 	JSON    string
 	JQ      string
 }
 
 type ListBookmarksOptions struct {
-	Query string
-	Limit int
-	JSON  string
-	JQ    string
+	Query  string
+	Limit  int
+	Offset int
+	JSON   string
+	JQ     string
 }
 
 func (a *App) ListEntries(opts ListEntriesOptions) error {
@@ -30,6 +32,7 @@ func (a *App) ListEntries(opts ListEntriesOptions) error {
 		FeedID:  opts.FeedID,
 		Search:  opts.Search,
 		Limit:   opts.Limit,
+		Offset:  opts.Offset,
 		Status:  opts.Status,
 		Starred: opts.Starred,
 	})
@@ -37,17 +40,26 @@ func (a *App) ListEntries(opts ListEntriesOptions) error {
 		return fmt.Errorf("failed to list entries: %w", err)
 	}
 
-	return format.Output(result.Entries, opts.JSON, opts.JQ)
+	output := map[string]any{
+		"total": result.Total,
+		"items": result.Entries,
+	}
+	return format.Output(output, opts.JSON, opts.JQ)
 }
 
 func (a *App) ListBookmarks(opts ListBookmarksOptions) error {
 	result, err := linkding.ListBookmarks(a.Config.Linkding.Endpoint, a.Config.Linkding.APIKey, linkding.ListBookmarksOptions{
-		Query: opts.Query,
-		Limit: opts.Limit,
+		Query:  opts.Query,
+		Limit:  opts.Limit,
+		Offset: opts.Offset,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to list bookmarks: %w", err)
 	}
 
-	return format.Output(result.Results, opts.JSON, opts.JQ)
+	output := map[string]any{
+		"total": result.Count,
+		"items": result.Results,
+	}
+	return format.Output(output, opts.JSON, opts.JQ)
 }

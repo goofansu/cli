@@ -26,6 +26,7 @@ type ListEntriesOptions struct {
 	Starred string
 	Limit   int
 	Status  string
+	Offset  int
 }
 
 func Entries(endpoint, apiKey string, opts ListEntriesOptions) (*api.EntryResultSet, error) {
@@ -34,6 +35,7 @@ func Entries(endpoint, apiKey string, opts ListEntriesOptions) (*api.EntryResult
 	filter := &api.Filter{
 		Search:    opts.Search,
 		Limit:     opts.Limit,
+		Offset:    opts.Offset,
 		Order:     "published_at",
 		Direction: "desc",
 	}
