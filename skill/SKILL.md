@@ -3,27 +3,9 @@ name: cli
 description: Unified command-line interface for managing bookmarks (linkding) and feeds (miniflux). Use for authentication, managing bookmarks, and managing feeds.
 ---
 
-# CLI
+# cli
 
-Unified CLI for managing bookmarks (Linkding) and feeds (Miniflux).
-
-## Authentication
-
-Services: `miniflux` (feeds), `linkding` (bookmarks). Use `cli login --help` for setup.
-
-## Default List Commands
-
-```bash
-cli list bookmarks --jq ".[] | { id, url, title, description, notes, tag_names }"
-cli list entries --jq ".[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
-```
-
-## Discovering Fields
-
-```bash
-cli list entries --jq ".[0] | keys"
-cli list bookmarks --jq ".[0] | keys"
-```
+A unified command-line interface for managing bookmarks (via Linkding) and feeds (via Miniflux).
 
 ## Commands
 
@@ -38,7 +20,40 @@ cli list entries          # List feed entries
 
 Use `--help` on any command for options.
 
-## Notes
+## Workflows
 
-- `--jq` works independently (doesn't require `--json`)
-- Validate feed URLs before adding to avoid rate limiting
+### Get unread Entries
+
+```bash
+cli list entries --status unread --jq ".[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
+```
+
+### Get More Entries by Feed
+
+When you have the feed ID and title from a previous query, use `--feed-id` to get more entries from that specific feed:
+
+```bash
+cli list entries --feed-id 42 --limit 20 --jq ".[] | { id, url, title, published_at }"
+```
+
+### Add a Feed
+
+Before subscribing to a new feed, verify the URL points to a valid RSS/Atom feed to prevent rate limiting issues:
+
+```bash
+cli add feed <url>
+```
+
+### Add Bookmark with Notes
+
+When adding bookmarks with notes that contain double quotes, use single quotes around the entire notes value:
+
+```bash
+cli add bookmark <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
+```
+
+Alternatively, escape the inner double quotes:
+
+```bash
+cli add bookmark <url> --notes "Title: \"Some Title\"" --tags "tag1 tag2"
+```
