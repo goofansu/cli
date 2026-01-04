@@ -20,7 +20,7 @@ func Validate() error {
 	return nil
 }
 
-func CreatePage(url, tags string, archive bool) error {
+func CreateEntry(url, tags string, archive bool) error {
 	var archiveInt int
 	if archive {
 		archiveInt = 1
@@ -32,13 +32,13 @@ func CreatePage(url, tags string, archive bool) error {
 	}
 
 	if err := wallabago.PostEntry(url, "", commaTags, 0, archiveInt); err != nil {
-		return fmt.Errorf("failed to create page: %w", err)
+		return fmt.Errorf("failed to create entry: %w", err)
 	}
 
 	return nil
 }
 
-type ListPagesOptions struct {
+type ListEntriesOptions struct {
 	Archive int
 	Starred int
 	Page    int
@@ -47,12 +47,12 @@ type ListPagesOptions struct {
 	Domain  string
 }
 
-type ListPagesResult struct {
+type ListEntriesResult struct {
 	Total int
 	Items []wallabago.Item
 }
 
-func ListPages(opts ListPagesOptions) (*ListPagesResult, error) {
+func ListEntries(opts ListEntriesOptions) (*ListEntriesResult, error) {
 	tags := ""
 	if opts.Tags != "" {
 		tags = strings.Join(strings.Fields(opts.Tags), ",")
@@ -73,10 +73,10 @@ func ListPages(opts ListPagesOptions) (*ListPagesResult, error) {
 		opts.Domain,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list pages: %w", err)
+		return nil, fmt.Errorf("failed to list entries: %w", err)
 	}
 
-	return &ListPagesResult{
+	return &ListEntriesResult{
 		Total: entries.Total,
 		Items: entries.Embedded.Items,
 	}, nil

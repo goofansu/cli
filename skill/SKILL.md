@@ -19,7 +19,7 @@ A unified command-line interface for managing links (via Linkding), feeds (via M
 cli link add <url>    # Add link to Linkding
 cli link list         # List links
 cli feed add <url>    # Add feed to Miniflux
-cli entry list        # List feed entries
+cli feed list         # List feed entries
 cli page add <url>    # Add page to Wallabag
 cli page list         # List pages
 ```
@@ -33,19 +33,19 @@ Use `--help` on any command for options.
 Before processing results, verify you have all of them:
 
 ```bash
-cli entry list --status unread --jq '{total: .total, returned: (.items | length)}'
+cli feed list --status unread --jq '{total: .total, returned: (.items | length)}'
 ```
 
 If `total > returned`, either increase the limit or paginate with offset:
 
 ```bash
 # Increase limit to get all results
-cli entry list --status unread --limit 100
+cli feed list --status unread --limit 100
 
 # Or paginate through results
-cli entry list --status unread --limit 10 --offset 0
-cli entry list --status unread --limit 10 --offset 10
-cli entry list --status unread --limit 10 --offset 20
+cli feed list --status unread --limit 10 --offset 0
+cli feed list --status unread --limit 10 --offset 10
+cli feed list --status unread --limit 10 --offset 20
 ```
 
 ### List Unread Entries
@@ -53,7 +53,7 @@ cli entry list --status unread --limit 10 --offset 20
 Get unread entries with feed context:
 
 ```bash
-cli entry list --status unread --jq ".items[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
+cli feed list --status unread --jq ".items[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
 ```
 
 Output fields:
@@ -66,7 +66,7 @@ Output fields:
 When you have a `feed_id` from a previous query, fetch more entries from that feed:
 
 ```bash
-cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
+cli feed list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
 ```
 
 ### Find Starred/Read Entries by Date
@@ -74,7 +74,7 @@ cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, publis
 Use `changed_at` to filter by when entries were starred or marked read:
 
 ```bash
-cli entry list --starred --status read --limit 100 --json "id,url,title,changed_at,starred" | jq '.items[] | select(.changed_at >= "2025-12-26")'
+cli feed list --starred --status read --limit 100 --json "id,url,title,changed_at,starred" | jq '.items[] | select(.changed_at >= "2025-12-26")'
 ```
 
 Note: `changed_at` reflects when the entry was last modified (starred, read status changed), not publication date.

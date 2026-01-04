@@ -20,7 +20,7 @@ func CreateFeed(endpoint, apiKey string, opts CreateFeedOptions) (int64, error) 
 	return client.CreateFeed(req)
 }
 
-type ListEntriesOptions struct {
+type EntriesOptions struct {
 	FeedID  int64
 	Search  string
 	Starred string
@@ -29,7 +29,7 @@ type ListEntriesOptions struct {
 	Offset  int
 }
 
-func Entries(endpoint, apiKey string, opts ListEntriesOptions) (*api.EntryResultSet, error) {
+func Entries(endpoint, apiKey string, opts EntriesOptions) (*api.EntryResultSet, error) {
 	client := api.NewClient(endpoint, apiKey)
 
 	filter := &api.Filter{

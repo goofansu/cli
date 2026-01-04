@@ -28,7 +28,7 @@ func (a *App) AddLink(opts AddLinkOptions) error {
 		tagNames = strings.Split(opts.Tags, " ")
 	}
 
-	_, err := linkding.CreateLink(a.Config.Linkding.Endpoint, a.Config.Linkding.APIKey, linkding.CreateLinkOptions{
+	_, err := linkding.CreateBookmark(a.Config.Linkding.Endpoint, a.Config.Linkding.APIKey, linkding.CreateBookmarkOptions{
 		URL:      opts.URL,
 		Notes:    opts.Notes,
 		TagNames: tagNames,
@@ -42,7 +42,7 @@ func (a *App) AddLink(opts AddLinkOptions) error {
 }
 
 func (a *App) ListLinks(opts ListLinksOptions) error {
-	result, err := linkding.ListLinks(a.Config.Linkding.Endpoint, a.Config.Linkding.APIKey, linkding.ListLinksOptions{
+	result, err := linkding.ListBookmarks(a.Config.Linkding.Endpoint, a.Config.Linkding.APIKey, linkding.ListBookmarksOptions{
 		Query:  opts.Query,
 		Limit:  opts.Limit,
 		Offset: opts.Offset,

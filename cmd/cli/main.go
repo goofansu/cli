@@ -16,7 +16,6 @@ type Options struct {
 	Logout LogoutCommand `command:"logout" description:"Remove credentials for a service"`
 	Link   LinkCommand   `command:"link" description:"Manage links (linkding)"`
 	Feed   FeedCommand   `command:"feed" description:"Manage feeds (miniflux)"`
-	Entry  EntryCommand  `command:"entry" description:"Manage entries (miniflux)"`
 	Page   PageCommand   `command:"page" description:"Manage pages (wallabag)"`
 }
 
@@ -74,20 +73,20 @@ type FeedAddCommand struct {
 type LinkAddCommand struct {
 	BaseCommand
 	Args struct {
-		URL string `positional-arg-name:"url" description:"URL of the link to add" required:"yes"`
+		URL string `positional-arg-name:"url" description:"URL of link to add" required:"yes"`
 	} `positional-args:"yes"`
-	Notes string `long:"notes" description:"Optional notes for the link"`
+	Notes string `long:"notes" description:"Optional notes for link"`
 	Tags  string `long:"tags" description:"Optional tags separated by spaces"`
 }
 
-type EntryListCommand struct {
+type FeedListCommand struct {
 	BaseCommand
 	JSONOutputOptions
 	Limit   int    `long:"limit" description:"Maximum number of results" default:"10"`
 	Offset  int    `long:"offset" description:"Number of results to skip" default:"0"`
 	Search  string `long:"search" description:"Search query text"`
-	Status  string `long:"status" value-name:"status" description:"Filter by entry status (read, unread, removed)" default:"unread"`
-	Starred bool   `long:"starred" description:"Filter by starred entries"`
+	Status  string `long:"status" value-name:"status" description:"Filter by feed entry status (read, unread, removed)" default:"unread"`
+	Starred bool   `long:"starred" description:"Filter by starred feed entries"`
 	FeedID  int64  `long:"feed-id" description:"Filter by feed ID"`
 }
 
@@ -107,12 +106,8 @@ type LinkCommand struct {
 
 type FeedCommand struct {
 	BaseCommand
-	Add FeedAddCommand `command:"add" description:"Add a feed (miniflux)"`
-}
-
-type EntryCommand struct {
-	BaseCommand
-	List EntryListCommand `command:"list" description:"List entries (miniflux)"`
+	Add  FeedAddCommand  `command:"add" description:"Add a feed (miniflux)"`
+	List FeedListCommand `command:"list" description:"List feed entries (miniflux)"`
 }
 
 type PageAddCommand struct {
@@ -176,13 +171,13 @@ func (c *LinkAddCommand) Execute(_ []string) error {
 	return c.App.AddLink(opts)
 }
 
-func (c *EntryListCommand) Execute(_ []string) error {
+func (c *FeedListCommand) Execute(_ []string) error {
 	starred := ""
 	if c.Starred {
 		starred = "1"
 	}
 
-	opts := app.ListEntriesOptions{
+	opts := app.EntriesOptions{
 		FeedID:  c.FeedID,
 		Search:  c.Search,
 		Limit:   c.Limit,
@@ -253,7 +248,7 @@ func (c *LinkAddCommand) Usage() string {
 	return "<url>"
 }
 
-func (c *EntryListCommand) Usage() string {
+func (c *FeedListCommand) Usage() string {
 	return "[OPTIONS]"
 }
 
@@ -288,13 +283,13 @@ func main() {
 	opts.Link.Add.App = application
 	opts.Link.List.App = application
 	opts.Feed.Add.App = application
-	opts.Entry.List.App = application
+	opts.Feed.List.App = application
 	opts.Page.Add.App = application
 	opts.Page.List.App = application
 
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	parser.ShortDescription = "My command-line tool for agents"
-	parser.LongDescription = "Manage links, RSS feeds, and pages from terminal.\n\nExamples:\ncli login linkding --endpoint https://linkding.example.com --api-key YOUR_API_KEY\ncli login miniflux --endpoint https://miniflux.example.com --api-key YOUR_API_KEY\ncli login wallabag --endpoint https://wallabag.example.com --client-id ID --client-secret SECRET --username USER --password PASS\ncli link add https://example.com --tags \"cool useful\"\ncli link list\ncli feed add https://blog.example.com/feed.xml\ncli entry list\ncli page add https://example.com/article --archive\ncli page list"
+	parser.LongDescription = "Manage links, RSS feeds, and pages from terminal.\n\nExamples:\ncli link add https://example.com --tags \"cool useful\"\ncli link list\ncli feed add https://blog.example.com/feed.xml\ncli feed list\ncli page add https://example.com/article --archive\ncli page list"
 
 	if len(os.Args) == 1 {
 		parser.WriteHelp(os.Stdout)

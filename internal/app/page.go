@@ -33,7 +33,7 @@ func (a *App) AddPage(opts AddPageOptions) error {
 		a.Config.Wallabag.Password,
 	)
 
-	if err := wallabag.CreatePage(opts.URL, opts.Tags, opts.Archive); err != nil {
+	if err := wallabag.CreateEntry(opts.URL, opts.Tags, opts.Archive); err != nil {
 		return err
 	}
 
@@ -50,7 +50,7 @@ func (a *App) ListPages(opts ListPagesOptions) error {
 		a.Config.Wallabag.Password,
 	)
 
-	listOpts := wallabag.ListPagesOptions{
+	listOpts := wallabag.ListEntriesOptions{
 		Archive: opts.Archive,
 		Starred: opts.Starred,
 		Page:    opts.Page,
@@ -59,7 +59,7 @@ func (a *App) ListPages(opts ListPagesOptions) error {
 		Domain:  opts.Domain,
 	}
 
-	result, err := wallabag.ListPages(listOpts)
+	result, err := wallabag.ListEntries(listOpts)
 	if err != nil {
 		return err
 	}
