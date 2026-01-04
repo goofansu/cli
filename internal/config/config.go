@@ -10,6 +10,7 @@ import (
 const (
 	ServiceMiniflux = "miniflux"
 	ServiceLinkding = "linkding"
+	ServiceWallabag = "wallabag"
 )
 
 type ServiceConfig struct {
@@ -17,9 +18,18 @@ type ServiceConfig struct {
 	APIKey   string `toml:"api_key"`
 }
 
+type WallabagConfig struct {
+	Endpoint     string `toml:"endpoint"`
+	ClientID     string `toml:"client_id"`
+	ClientSecret string `toml:"client_secret"`
+	Username     string `toml:"username"`
+	Password     string `toml:"password"`
+}
+
 type Config struct {
-	Miniflux ServiceConfig `toml:"miniflux"`
-	Linkding ServiceConfig `toml:"linkding"`
+	Miniflux ServiceConfig  `toml:"miniflux"`
+	Linkding ServiceConfig  `toml:"linkding"`
+	Wallabag WallabagConfig `toml:"wallabag"`
 }
 
 func GetConfigPath() (string, error) {
@@ -74,6 +84,8 @@ func RemoveService(service string) error {
 		cfg.Miniflux = ServiceConfig{}
 	case ServiceLinkding:
 		cfg.Linkding = ServiceConfig{}
+	case ServiceWallabag:
+		cfg.Wallabag = WallabagConfig{}
 	default:
 		return nil
 	}
@@ -82,7 +94,7 @@ func RemoveService(service string) error {
 		return err
 	}
 
-	if cfg.Miniflux.Endpoint == "" && cfg.Linkding.Endpoint == "" {
+	if cfg.Miniflux.Endpoint == "" && cfg.Linkding.Endpoint == "" && cfg.Wallabag.Endpoint == "" {
 		path, err := GetConfigPath()
 		if err != nil {
 			return err

@@ -17,6 +17,7 @@ type Options struct {
 	Bookmark BookmarkCommand `command:"bookmark" description:"Manage bookmarks (linkding)"`
 	Feed     FeedCommand     `command:"feed" description:"Manage feeds (miniflux)"`
 	Entry    EntryCommand    `command:"entry" description:"Manage entries (miniflux)"`
+	Page     PageCommand     `command:"page" description:"Manage pages (wallabag)"`
 }
 
 type BaseCommand struct {
@@ -31,16 +32,20 @@ type JSONOutputOptions struct {
 type LoginCommand struct {
 	BaseCommand
 	Args struct {
-		Service string `positional-arg-name:"service" description:"Service name (miniflux or linkding)" required:"yes"`
+		Service string `positional-arg-name:"service" description:"Service name (miniflux, linkding, or wallabag)" required:"yes"`
 	} `positional-args:"yes"`
-	Endpoint string `long:"endpoint" description:"Service endpoint URL" required:"yes"`
-	APIKey   string `long:"api-key" description:"API key" required:"yes"`
+	Endpoint     string `long:"endpoint" description:"Service endpoint URL" required:"yes"`
+	APIKey       string `long:"api-key" description:"API key (for miniflux or linkding)"`
+	ClientID     string `long:"client-id" description:"OAuth client ID (for wallabag)"`
+	ClientSecret string `long:"client-secret" description:"OAuth client secret (for wallabag)"`
+	Username     string `long:"username" description:"Username (for wallabag)"`
+	Password     string `long:"password" description:"Password (for wallabag)"`
 }
 
 type LogoutCommand struct {
 	BaseCommand
 	Args struct {
-		Service string `positional-arg-name:"service" description:"Service name (miniflux or linkding)" required:"yes"`
+		Service string `positional-arg-name:"service" description:"Service name (miniflux, linkding, or wallabag)" required:"yes"`
 	} `positional-args:"yes"`
 }
 
@@ -96,8 +101,35 @@ type EntryCommand struct {
 	List EntryListCommand `command:"list" description:"List entries (miniflux)"`
 }
 
+type PageAddCommand struct {
+	BaseCommand
+	Args struct {
+		URL string `positional-arg-name:"url" description:"URL of the page to add" required:"yes"`
+	} `positional-args:"yes"`
+	Tags    string `long:"tags" description:"Tags separated by spaces"`
+	Archive bool   `long:"archive" description:"Mark as archived"`
+}
+
+type PageCommand struct {
+	BaseCommand
+	Add PageAddCommand `command:"add" description:"Add a page (wallabag)"`
+}
+
 func (c *LoginCommand) Execute(_ []string) error {
-	return auth.Login(c.Args.Service, c.Endpoint, c.APIKey)
+	switch c.Args.Service {
+	case "miniflux", "linkding":
+		if c.APIKey == "" {
+			return fmt.Errorf("--api-key is required for %s", c.Args.Service)
+		}
+		return auth.Login(c.Args.Service, c.Endpoint, c.APIKey)
+	case "wallabag":
+		if c.ClientID == "" || c.ClientSecret == "" || c.Username == "" || c.Password == "" {
+			return fmt.Errorf("--client-id, --client-secret, --username, --password required for wallabag")
+		}
+		return auth.LoginWallabag(c.Endpoint, c.ClientID, c.ClientSecret, c.Username, c.Password)
+	default:
+		return fmt.Errorf("unknown service: %s", c.Args.Service)
+	}
 }
 
 func (c *LogoutCommand) Execute(_ []string) error {
@@ -154,6 +186,15 @@ func (c *BookmarkListCommand) Execute(_ []string) error {
 	return c.App.ListBookmarks(opts)
 }
 
+func (c *PageAddCommand) Execute(_ []string) error {
+	opts := app.AddPageOptions{
+		URL:     c.Args.URL,
+		Tags:    c.Tags,
+		Archive: c.Archive,
+	}
+	return c.App.AddPage(opts)
+}
+
 func (c *LoginCommand) Usage() string {
 	return "<service> [OPTIONS]"
 }
@@ -178,6 +219,10 @@ func (c *BookmarkListCommand) Usage() string {
 	return "[OPTIONS]"
 }
 
+func (c *PageAddCommand) Usage() string {
+	return "<url>"
+}
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil && !os.IsNotExist(err) {
@@ -196,10 +241,11 @@ func main() {
 	opts.Bookmark.List.App = application
 	opts.Feed.Add.App = application
 	opts.Entry.List.App = application
+	opts.Page.Add.App = application
 
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	parser.ShortDescription = "My command-line tool for agents"
-	parser.LongDescription = "Manage bookmarks and RSS feeds from terminal.\n\nExamples:\ncli login linkding --endpoint https://linkding.example.com --api-key YOUR_API_KEY\ncli login miniflux --endpoint https://miniflux.example.com --api-key YOUR_API_KEY\ncli bookmark add https://example.com --tags \"cool useful\"\ncli bookmark list\ncli feed add https://blog.example.com/feed.xml\ncli entry list"
+	parser.LongDescription = "Manage bookmarks, RSS feeds, and pages from terminal.\n\nExamples:\ncli login linkding --endpoint https://linkding.example.com --api-key YOUR_API_KEY\ncli login miniflux --endpoint https://miniflux.example.com --api-key YOUR_API_KEY\ncli login wallabag --endpoint https://wallabag.example.com --client-id ID --client-secret SECRET --username USER --password PASS\ncli bookmark add https://example.com --tags \"cool useful\"\ncli bookmark list\ncli feed add https://blog.example.com/feed.xml\ncli entry list\ncli page add https://example.com/article --archive"
 
 	if len(os.Args) == 1 {
 		parser.WriteHelp(os.Stdout)

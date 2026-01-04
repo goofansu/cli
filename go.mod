@@ -11,6 +11,8 @@ require (
 )
 
 require (
+	github.com/Strubbl/wallabago/v8 v8.2.1 // indirect
 	github.com/itchyny/timefmt-go v0.1.7 // indirect
 	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 )
