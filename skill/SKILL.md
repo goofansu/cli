@@ -1,11 +1,11 @@
 ---
 name: cli
-description: Unified command-line interface for managing bookmarks (linkding) and feeds (miniflux). Use for authentication, managing bookmarks, and managing feeds.
+description: Unified command-line interface for managing bookmarks (linkding), feeds (miniflux), and pages (wallabag). Use for authentication, managing bookmarks, and managing feeds.
 ---
 
 # cli
 
-A unified command-line interface for managing bookmarks (via Linkding) and feeds (via Miniflux).
+A unified command-line interface for managing bookmarks (via Linkding), feeds (via Miniflux), and pages (via Wallabag).
 
 ## Critical Notes
 
@@ -20,6 +20,8 @@ cli bookmark add <url>    # Add bookmark to Linkding
 cli bookmark list         # List bookmarks
 cli feed add <url>        # Add feed to Miniflux
 cli entry list            # List feed entries
+cli page add <url>        # Add page to Wallabag
+cli page list             # List pages
 ```
 
 Use `--help` on any command for options.
@@ -95,6 +97,33 @@ cli bookmark add <url>
 With metadata:
 ```bash
 cli bookmark add <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
+```
+
+Tags are space-separated within the quoted string.
+
+### Add a Page
+
+Basic:
+```bash
+cli page add <url>
+```
+
+With metadata:
+```bash
+cli page add <url> --tags "tag1 tag2" --archive
+```
+
+### List Pages
+
+Get pages with filtering:
+```bash
+cli page list --starred --per-page 20 --jq ".items[] | { id, url, title, domain_name }"
+```
+
+Filter by domain or tags:
+```bash
+cli page list --domain example.com
+cli page list --tags "tech news"
 ```
 
 Tags are space-separated within the quoted string.
