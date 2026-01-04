@@ -142,11 +142,11 @@ type PageCommand struct {
 }
 
 func (c *LoginMinifluxCommand) Execute(_ []string) error {
-	return auth.Login("miniflux", c.Endpoint, c.APIKey)
+	return auth.LoginMiniflux(c.Endpoint, c.APIKey)
 }
 
 func (c *LoginLinkdingCommand) Execute(_ []string) error {
-	return auth.Login("linkding", c.Endpoint, c.APIKey)
+	return auth.LoginLinkding(c.Endpoint, c.APIKey)
 }
 
 func (c *LoginWallabagCommand) Execute(_ []string) error {
