@@ -110,9 +110,21 @@ type PageAddCommand struct {
 	Archive bool   `long:"archive" description:"Mark as archived"`
 }
 
+type PageListCommand struct {
+	BaseCommand
+	JSONOutputOptions
+	Archive bool   `long:"archive" description:"Filter by archived status"`
+	Starred bool   `long:"starred" description:"Filter by starred status"`
+	Page    int    `long:"page" description:"Page number" default:"1"`
+	PerPage int    `long:"per-page" description:"Items per page" default:"10"`
+	Tags    string `long:"tags" description:"Tags separated by spaces"`
+	Domain  string `long:"domain" description:"Filter by domain name"`
+}
+
 type PageCommand struct {
 	BaseCommand
-	Add PageAddCommand `command:"add" description:"Add a page (wallabag)"`
+	Add  PageAddCommand  `command:"add" description:"Add a page (wallabag)"`
+	List PageListCommand `command:"list" description:"List pages (wallabag)"`
 }
 
 func (c *LoginCommand) Execute(_ []string) error {
@@ -195,6 +207,31 @@ func (c *PageAddCommand) Execute(_ []string) error {
 	return c.App.AddPage(opts)
 }
 
+func (c *PageListCommand) Execute(_ []string) error {
+	archive := -1
+	if c.Archive {
+		archive = 1
+	}
+
+	starred := -1
+	if c.Starred {
+		starred = 1
+	}
+
+	opts := app.ListPagesOptions{
+		Archive: archive,
+		Starred: starred,
+		Page:    c.Page,
+		PerPage: c.PerPage,
+		Tags:    c.Tags,
+		Domain:  c.Domain,
+		JSON:    c.JSON,
+		JQ:      c.JQ,
+	}
+
+	return c.App.ListPages(opts)
+}
+
 func (c *LoginCommand) Usage() string {
 	return "<service> [OPTIONS]"
 }
@@ -223,6 +260,10 @@ func (c *PageAddCommand) Usage() string {
 	return "<url>"
 }
 
+func (c *PageListCommand) Usage() string {
+	return "[OPTIONS]"
+}
+
 func main() {
 	cfg, err := config.Load()
 	if err != nil && !os.IsNotExist(err) {
@@ -242,10 +283,11 @@ func main() {
 	opts.Feed.Add.App = application
 	opts.Entry.List.App = application
 	opts.Page.Add.App = application
+	opts.Page.List.App = application
 
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	parser.ShortDescription = "My command-line tool for agents"
-	parser.LongDescription = "Manage bookmarks, RSS feeds, and pages from terminal.\n\nExamples:\ncli login linkding --endpoint https://linkding.example.com --api-key YOUR_API_KEY\ncli login miniflux --endpoint https://miniflux.example.com --api-key YOUR_API_KEY\ncli login wallabag --endpoint https://wallabag.example.com --client-id ID --client-secret SECRET --username USER --password PASS\ncli bookmark add https://example.com --tags \"cool useful\"\ncli bookmark list\ncli feed add https://blog.example.com/feed.xml\ncli entry list\ncli page add https://example.com/article --archive"
+	parser.LongDescription = "Manage bookmarks, RSS feeds, and pages from terminal.\n\nExamples:\ncli login linkding --endpoint https://linkding.example.com --api-key YOUR_API_KEY\ncli login miniflux --endpoint https://miniflux.example.com --api-key YOUR_API_KEY\ncli login wallabag --endpoint https://wallabag.example.com --client-id ID --client-secret SECRET --username USER --password PASS\ncli bookmark add https://example.com --tags \"cool useful\"\ncli bookmark list\ncli feed add https://blog.example.com/feed.xml\ncli entry list\ncli page add https://example.com/article --archive\ncli page list"
 
 	if len(os.Args) == 1 {
 		parser.WriteHelp(os.Stdout)
