@@ -32,22 +32,22 @@ type JSONOutputOptions struct {
 type LoginMinifluxCommand struct {
 	BaseCommand
 	Endpoint string `long:"endpoint" description:"Miniflux endpoint URL" required:"yes"`
-	APIKey   string `long:"api-key" description:"API key" required:"yes"`
+	APIKey   string `long:"api-key" description:"API key"`
 }
 
 type LoginLinkdingCommand struct {
 	BaseCommand
 	Endpoint string `long:"endpoint" description:"Linkding endpoint URL" required:"yes"`
-	APIKey   string `long:"api-key" description:"API key" required:"yes"`
+	APIKey   string `long:"api-key" description:"API key"`
 }
 
 type LoginWallabagCommand struct {
 	BaseCommand
 	Endpoint     string `long:"endpoint" description:"Wallabag endpoint URL" required:"yes"`
 	ClientID     string `long:"client-id" description:"OAuth client ID" required:"yes"`
-	ClientSecret string `long:"client-secret" description:"OAuth client secret" required:"yes"`
+	ClientSecret string `long:"client-secret" description:"OAuth client secret"`
 	Username     string `long:"username" description:"Username" required:"yes"`
-	Password     string `long:"password" description:"Password" required:"yes"`
+	Password     string `long:"password" description:"Password"`
 }
 
 type LoginCommand struct {
@@ -156,15 +156,33 @@ type PageCommand struct {
 }
 
 func (c *LoginMinifluxCommand) Execute(_ []string) error {
-	return auth.LoginMiniflux(c.Endpoint, c.APIKey)
+	apiKey, err := auth.GetSecretOrPrompt(c.APIKey, "API Key: ")
+	if err != nil {
+		return err
+	}
+	return auth.LoginMiniflux(c.Endpoint, apiKey)
 }
 
 func (c *LoginLinkdingCommand) Execute(_ []string) error {
-	return auth.LoginLinkding(c.Endpoint, c.APIKey)
+	apiKey, err := auth.GetSecretOrPrompt(c.APIKey, "API Key: ")
+	if err != nil {
+		return err
+	}
+	return auth.LoginLinkding(c.Endpoint, apiKey)
 }
 
 func (c *LoginWallabagCommand) Execute(_ []string) error {
-	return auth.LoginWallabag(c.Endpoint, c.ClientID, c.ClientSecret, c.Username, c.Password)
+	clientSecret, err := auth.GetSecretOrPrompt(c.ClientSecret, "Client Secret: ")
+	if err != nil {
+		return err
+	}
+
+	password, err := auth.GetSecretOrPrompt(c.Password, "Password: ")
+	if err != nil {
+		return err
+	}
+
+	return auth.LoginWallabag(c.Endpoint, c.ClientID, clientSecret, c.Username, password)
 }
 
 func (c *LogoutCommand) Execute(_ []string) error {

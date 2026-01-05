@@ -8,6 +8,7 @@ require (
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/piero-vic/go-linkding v0.3.0
+	golang.org/x/term v0.38.0
 	miniflux.app/v2 v2.2.15
 )
 

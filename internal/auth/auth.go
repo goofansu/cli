@@ -4,12 +4,31 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/goofansu/cli/internal/config"
 	"github.com/goofansu/cli/internal/linkding"
 	"github.com/goofansu/cli/internal/miniflux"
 	"github.com/goofansu/cli/internal/wallabag"
+	"golang.org/x/term"
 )
+
+func PromptSecret(prompt string) (string, error) {
+	fmt.Print(prompt)
+	byteSecret, err := term.ReadPassword(int(syscall.Stdin))
+	fmt.Println()
+	if err != nil {
+		return "", fmt.Errorf("failed to read secret: %w", err)
+	}
+	return string(byteSecret), nil
+}
+
+func GetSecretOrPrompt(secret, prompt string) (string, error) {
+	if secret != "" {
+		return secret, nil
+	}
+	return PromptSecret(prompt)
+}
 
 func LoginMiniflux(endpoint, apiKey string) error {
 	endpoint = strings.TrimSpace(endpoint)
