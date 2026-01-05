@@ -71,6 +71,11 @@ type FeedAddCommand struct {
 	CategoryID int64 `long:"category-id" description:"Miniflux category ID (defaults to 1)"`
 }
 
+type FeedListCommand struct {
+	BaseCommand
+	JSONOutputOptions
+}
+
 type LinkAddCommand struct {
 	BaseCommand
 	Args struct {
@@ -120,7 +125,8 @@ type EntryCommand struct {
 
 type FeedCommand struct {
 	BaseCommand
-	Add FeedAddCommand `command:"add" description:"Add a feed (miniflux)"`
+	Add  FeedAddCommand  `command:"add" description:"Add a feed (miniflux)"`
+	List FeedListCommand `command:"list" description:"List feeds (miniflux)"`
 }
 
 type PageAddCommand struct {
@@ -172,6 +178,14 @@ func (c *FeedAddCommand) Execute(_ []string) error {
 	}
 
 	return c.App.AddFeed(opts)
+}
+
+func (c *FeedListCommand) Execute(_ []string) error {
+	opts := app.ListFeedsOptions{
+		JSON: c.JSON,
+		JQ:   c.JQ,
+	}
+	return c.App.ListFeeds(opts)
 }
 
 func (c *LinkAddCommand) Execute(_ []string) error {
@@ -257,6 +271,10 @@ func (c *FeedAddCommand) Usage() string {
 	return "<url>"
 }
 
+func (c *FeedListCommand) Usage() string {
+	return "[OPTIONS]"
+}
+
 func (c *LinkAddCommand) Usage() string {
 	return "<url>"
 }
@@ -304,6 +322,7 @@ func main() {
 	opts.Link.Add.App = application
 	opts.Link.List.App = application
 	opts.Feed.Add.App = application
+	opts.Feed.List.App = application
 	opts.Entry.List.App = application
 	opts.Entry.Save.App = application
 	opts.Page.Add.App = application

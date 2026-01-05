@@ -12,6 +12,11 @@ type AddFeedOptions struct {
 	CategoryID int64
 }
 
+type ListFeedsOptions struct {
+	JSON string
+	JQ   string
+}
+
 type EntriesOptions struct {
 	FeedID  int64
 	Search  string
@@ -39,6 +44,20 @@ func (a *App) AddFeed(opts AddFeedOptions) error {
 
 	fmt.Printf("✓ Feed created successfully (ID: %d)\n", feedID)
 	return nil
+}
+
+func (a *App) ListFeeds(opts ListFeedsOptions) error {
+	feeds, err := miniflux.Feeds(a.Config.Miniflux.Endpoint, a.Config.Miniflux.APIKey)
+	if err != nil {
+		return fmt.Errorf("failed to list feeds: %w", err)
+	}
+
+	data := map[string]any{
+		"total": len(feeds),
+		"items": feeds,
+	}
+
+	return format.Output(data, opts.JSON, opts.JQ)
 }
 
 func (a *App) ListEntries(opts EntriesOptions) error {

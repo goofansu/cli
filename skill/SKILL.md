@@ -19,6 +19,7 @@ A unified command-line interface for managing links (via Linkding), feeds (via M
 cli link add <url>    # Add link to Linkding
 cli link list         # List links
 cli feed add <url>    # Add feed to Miniflux
+cli feed list         # List feeds
 cli entry list        # List feed entries
 cli entry save <id>   # Save entry to third-party service
 cli page add <url>    # Add page to Wallabag
@@ -64,7 +65,13 @@ Output fields:
 
 ### List Entries by Feed
 
-When you have a `feed_id` from a previous query, fetch more entries from that feed:
+First, find the feed ID:
+
+```bash
+cli feed list --jq ".items[] | { id, title, site_url }"
+```
+
+Then fetch entries from that feed:
 
 ```bash
 cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
