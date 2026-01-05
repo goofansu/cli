@@ -51,7 +51,7 @@ Use `--help` on any command for options.
 
 ## Examples
 
-### Check Total Results Before Processing
+### Check total results before processing
 
 Before processing results, verify you have all of them:
 
@@ -71,7 +71,7 @@ cli entry list --status unread --limit 10 --offset 10
 cli entry list --status unread --limit 10 --offset 20
 ```
 
-### List Unread Entries
+### List unread entries
 
 Get unread entries with feed context:
 
@@ -84,7 +84,7 @@ Output fields:
 - `url`: Original article URL
 - `feed_id`, `feed_title`: Source feed info for grouping/filtering
 
-### List Entries by Feed
+### List entries by feed
 
 First, find the feed ID:
 
@@ -98,7 +98,7 @@ Then fetch entries from that feed:
 cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
 ```
 
-### Find Starred/Read Entries by Date
+### Find starred/read entries by date
 
 Use `changed_at` to filter by when entries were starred or marked read:
 
@@ -108,7 +108,7 @@ cli entry list --starred --status read --limit 100 --json "id,url,title,changed_
 
 Note: `changed_at` reflects when the entry was last modified (starred, read status changed), not publication date.
 
-### Save an Entry to Third-Party Services
+### Save an entry to third-party services
 
 First, find the entry you want to save by listing entries:
 
@@ -132,7 +132,23 @@ cli feed add <url>
 
 The URL must point to a valid RSS/Atom feed.
 
-### Add a Link
+### Add a feed to a category
+
+First, find the category ID by listing feeds with category information:
+
+```bash
+cli feed list --jq ".items[] | { id, title, site_url, category_id: .category.id, category_title: .category.title }"
+```
+
+Then add the feed with the category:
+
+```bash
+cli feed add <url> --category-id <category_id>
+```
+
+The `--category-id` parameter defaults to 1 (All category) if not specified.
+
+### Add a link
 
 Basic:
 ```bash
@@ -146,7 +162,7 @@ cli link add <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
 
 Tags are space-separated within the quoted string.
 
-### Add a Page
+### Add a page
 
 Basic:
 ```bash
@@ -158,7 +174,7 @@ With metadata:
 cli page add <url> --tags "tag1 tag2" --archive
 ```
 
-### List Pages
+### List pages
 
 Get pages with filtering:
 ```bash
