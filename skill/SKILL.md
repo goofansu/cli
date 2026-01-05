@@ -7,14 +7,13 @@ description: Unified command-line interface for managing links (linkding), feeds
 
 A unified command-line interface for managing links (via Linkding), feeds (via Miniflux), and pages (via Wallabag).
 
-## Critical Notes
+## Instructions
 
-1. **Pagination**: All `list` commands return `{total, items}`. Default limit is 10, default offset is 0. Use `--limit` and `--offset` for pagination.
-2. **Output filtering**: Use `--jq` for inline filtering or `--json "field1,field2"` to select specific fields.
-3. **Quote handling**: For values with double quotes, wrap in single quotes: `--notes 'Title: "Example"'`
+When using this CLI tool, follow these guidelines:
 
-## Commands
+### Command Structure
 
+Available commands:
 ```bash
 cli link add <url>    # Add link to Linkding
 cli link list         # List links
@@ -28,7 +27,29 @@ cli page list         # List pages
 
 Use `--help` on any command for options.
 
-## Workflows
+### Critical Guidelines
+
+1. **Pagination**: All `list` commands return `{total, items}` structure:
+   - `link list`, `feed list`, `entry list`: Use `--limit` and `--offset` for pagination (default: limit=10, offset=0)
+   - `page list`: Use `--page` and `--per-page` for pagination
+
+2. **Output Filtering**:
+   - Use `--jq` for inline filtering with jq expressions
+   - Use `--json "field1,field2"` to select specific fields
+   - All list commands return structured JSON that can be piped to jq
+
+3. **Quote Handling**:
+   - For values with double quotes, wrap in single quotes: `--notes 'Title: "Example"'`
+   - Tags are space-separated within a quoted string: `--tags "tag1 tag2"`
+
+### Workflow Steps
+
+1. **Before processing results**: Always check if you have all results by comparing `total` vs. returned items count
+2. **When paginating**: Use appropriate pagination flags for the command type
+3. **For targeted queries**: Use `--jq` to filter and transform output inline
+4. **When adding content**: Include relevant metadata (notes, tags) for better organization
+
+## Examples
 
 ### Check Total Results Before Processing
 
