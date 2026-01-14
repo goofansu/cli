@@ -1,4 +1,4 @@
-module github.com/goofansu/cli
+module github.com/goofansu/mlwcli
 
 go 1.25.4
 

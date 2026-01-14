@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/goofansu/cli/internal/format"
-	"github.com/goofansu/cli/internal/wallabag"
+	"github.com/goofansu/mlwcli/internal/format"
+	"github.com/goofansu/mlwcli/internal/wallabag"
 )
 
 type AddPageOptions struct {

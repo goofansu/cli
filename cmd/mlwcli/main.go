@@ -6,9 +6,9 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 
-	"github.com/goofansu/cli/internal/app"
-	"github.com/goofansu/cli/internal/auth"
-	"github.com/goofansu/cli/internal/config"
+	"github.com/goofansu/mlwcli/internal/app"
+	"github.com/goofansu/mlwcli/internal/auth"
+	"github.com/goofansu/mlwcli/internal/config"
 )
 
 type Options struct {
@@ -347,8 +347,8 @@ func main() {
 	opts.Page.List.App = application
 
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
-	parser.ShortDescription = "My command-line tool for agents"
-	parser.LongDescription = "Manage links, RSS feeds, and pages from terminal.\n\nExamples:\ncli link add https://example.com --tags \"cool useful\"\ncli link list\ncli feed add https://blog.example.com/feed.xml\ncli entry list\ncli page add https://example.com/article --archive\ncli page list"
+	parser.ShortDescription = "mlwcli - Manage Linkding, Miniflux, and Wallabag"
+	parser.LongDescription = "Manage Linkding, Miniflux, and Wallabag from terminal.\n\nExamples:\nmlwcli link add https://example.com --tags \"cool useful\"\nmlwcli link list\nmlwcli feed add https://blog.example.com/feed.xml\nmlwcli entry list\nmlwcli page add https://example.com/article --archive\nmlwcli page list"
 
 	if len(os.Args) == 1 {
 		parser.WriteHelp(os.Stdout)

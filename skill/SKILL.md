@@ -1,9 +1,9 @@
 ---
-name: cli
+name: mlwcli
 description: Unified command-line interface for managing links (linkding), feeds (miniflux), and pages (wallabag). Use for authentication, managing links, and managing feeds.
 ---
 
-# cli
+# mlwcli
 
 A unified command-line interface for managing links (via Linkding), feeds (via Miniflux), and pages (via Wallabag).
 
@@ -15,14 +15,14 @@ When using this CLI tool, follow these guidelines:
 
 Available commands:
 ```bash
-cli link add <url>    # Add link to Linkding
-cli link list         # List links
-cli feed add <url>    # Add feed to Miniflux
-cli feed list         # List feeds
-cli entry list        # List feed entries
-cli entry save <id>   # Save entry to third-party service
-cli page add <url>    # Add page to Wallabag
-cli page list         # List pages
+mlwcli link add <url>    # Add link to Linkding
+mlwcli link list         # List links
+mlwcli feed add <url>    # Add feed to Miniflux
+mlwcli feed list         # List feeds
+mlwcli entry list        # List feed entries
+mlwcli entry save <id>   # Save entry to third-party service
+mlwcli page add <url>    # Add page to Wallabag
+mlwcli page list         # List pages
 ```
 
 Use `--help` on any command for options.
@@ -56,19 +56,19 @@ Use `--help` on any command for options.
 Before processing results, verify you have all of them:
 
 ```bash
-cli entry list --status unread --jq '{total: .total, returned: (.items | length)}'
+mlwcli entry list --status unread --jq '{total: .total, returned: (.items | length)}'
 ```
 
 If `total > returned`, either increase the limit or paginate with offset:
 
 ```bash
 # Increase limit to get all results
-cli entry list --status unread --limit 100
+mlwcli entry list --status unread --limit 100
 
 # Or paginate through results
-cli entry list --status unread --limit 10 --offset 0
-cli entry list --status unread --limit 10 --offset 10
-cli entry list --status unread --limit 10 --offset 20
+mlwcli entry list --status unread --limit 10 --offset 0
+mlwcli entry list --status unread --limit 10 --offset 10
+mlwcli entry list --status unread --limit 10 --offset 20
 ```
 
 ### List unread entries
@@ -76,7 +76,7 @@ cli entry list --status unread --limit 10 --offset 20
 Get unread entries with feed context:
 
 ```bash
-cli entry list --status unread --jq ".items[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
+mlwcli entry list --status unread --jq ".items[] | { id, url, title, published_at, status, feed_id: .feed.id, feed_title: .feed.title }"
 ```
 
 Output fields:
@@ -89,13 +89,13 @@ Output fields:
 First, find the feed ID:
 
 ```bash
-cli feed list --jq ".items[] | { id, title, site_url }"
+mlwcli feed list --jq ".items[] | { id, title, site_url }"
 ```
 
 Then fetch entries from that feed:
 
 ```bash
-cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
+mlwcli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, published_at }"
 ```
 
 ### Find starred/read entries by date
@@ -103,7 +103,7 @@ cli entry list --feed-id 42 --limit 20 --jq ".items[] | { id, url, title, publis
 Use `changed_at` to filter by when entries were starred or marked read:
 
 ```bash
-cli entry list --starred --status read --limit 100 --json "id,url,title,changed_at,starred" | jq '.items[] | select(.changed_at >= "2025-12-26")'
+mlwcli entry list --starred --status read --limit 100 --json "id,url,title,changed_at,starred" | jq '.items[] | select(.changed_at >= "2025-12-26")'
 ```
 
 Note: `changed_at` reflects when the entry was last modified (starred, read status changed), not publication date.
@@ -113,13 +113,13 @@ Note: `changed_at` reflects when the entry was last modified (starred, read stat
 First, find the entry you want to save by listing entries:
 
 ```bash
-cli entry list --status unread --jq ".items[] | { id, url, title }"
+mlwcli entry list --status unread --jq ".items[] | { id, url, title }"
 ```
 
 Then save it using the entry ID:
 
 ```bash
-cli entry save 42
+mlwcli entry save 42
 ```
 
 This saves the entry to Miniflux's third-party integration (e.g., Wallabag, Pocket, etc.), which must be configured in Miniflux settings.
@@ -127,7 +127,7 @@ This saves the entry to Miniflux's third-party integration (e.g., Wallabag, Pock
 ### Add a Feed
 
 ```bash
-cli feed add <url>
+mlwcli feed add <url>
 ```
 
 The URL must point to a valid RSS/Atom feed.
@@ -137,13 +137,13 @@ The URL must point to a valid RSS/Atom feed.
 First, find the category ID by listing feeds with category information:
 
 ```bash
-cli feed list --jq ".items[] | { id, title, site_url, category_id: .category.id, category_title: .category.title }"
+mlwcli feed list --jq ".items[] | { id, title, site_url, category_id: .category.id, category_title: .category.title }"
 ```
 
 Then add the feed with the category:
 
 ```bash
-cli feed add <url> --category-id <category_id>
+mlwcli feed add <url> --category-id <category_id>
 ```
 
 The `--category-id` parameter defaults to 1 (All category) if not specified.
@@ -152,12 +152,12 @@ The `--category-id` parameter defaults to 1 (All category) if not specified.
 
 Basic:
 ```bash
-cli link add <url>
+mlwcli link add <url>
 ```
 
 With metadata:
 ```bash
-cli link add <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
+mlwcli link add <url> --notes 'Title: "Some Title"' --tags "tag1 tag2"
 ```
 
 Tags are space-separated within the quoted string.
@@ -166,25 +166,25 @@ Tags are space-separated within the quoted string.
 
 Basic:
 ```bash
-cli page add <url>
+mlwcli page add <url>
 ```
 
 With metadata:
 ```bash
-cli page add <url> --tags "tag1 tag2" --archive
+mlwcli page add <url> --tags "tag1 tag2" --archive
 ```
 
 ### List pages
 
 Get pages with filtering:
 ```bash
-cli page list --starred --per-page 20 --jq ".items[] | { id, url, title, domain_name }"
+mlwcli page list --starred --per-page 20 --jq ".items[] | { id, url, title, domain_name }"
 ```
 
 Filter by domain or tags:
 ```bash
-cli page list --domain example.com
-cli page list --tags "tech news"
+mlwcli page list --domain example.com
+mlwcli page list --tags "tech news"
 ```
 
 Tags are space-separated within the quoted string.

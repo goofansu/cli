@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/goofansu/cli/internal/format"
-	"github.com/goofansu/cli/internal/miniflux"
+	"github.com/goofansu/mlwcli/internal/format"
+	"github.com/goofansu/mlwcli/internal/miniflux"
 )
 
 type AddFeedOptions struct {

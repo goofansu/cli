@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/goofansu/cli/internal/config"
+	"github.com/goofansu/mlwcli/internal/config"
 )
 
 type App struct {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goofansu/cli/internal/format"
-	"github.com/goofansu/cli/internal/linkding"
+	"github.com/goofansu/mlwcli/internal/format"
+	"github.com/goofansu/mlwcli/internal/linkding"
 )
 
 type AddLinkOptions struct {

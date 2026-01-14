@@ -6,10 +6,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/goofansu/cli/internal/config"
-	"github.com/goofansu/cli/internal/linkding"
-	"github.com/goofansu/cli/internal/miniflux"
-	"github.com/goofansu/cli/internal/wallabag"
+	"github.com/goofansu/mlwcli/internal/config"
+	"github.com/goofansu/mlwcli/internal/linkding"
+	"github.com/goofansu/mlwcli/internal/miniflux"
+	"github.com/goofansu/mlwcli/internal/wallabag"
 	"golang.org/x/term"
 )
 
