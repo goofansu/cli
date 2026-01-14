@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -23,6 +24,42 @@ func PromptSecret(prompt string) (string, error) {
 	return string(byteSecret), nil
 }
 
+var stdinReader = bufio.NewReader(os.Stdin)
+
+func PromptInput(prompt string) (string, error) {
+	fmt.Print(prompt)
+	input, err := stdinReader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read input: %w", err)
+	}
+	return strings.TrimSpace(input), nil
+}
+
+func PromptService() (string, error) {
+	fmt.Println("Select a service:")
+	fmt.Println("1. Linkding")
+	fmt.Println("2. Miniflux")
+	fmt.Println("3. Wallabag")
+	fmt.Print("Enter your choice (1-3): ")
+
+	choice, err := stdinReader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read choice: %w", err)
+	}
+
+	choice = strings.TrimSpace(choice)
+	switch choice {
+	case "1":
+		return config.ServiceLinkding, nil
+	case "2":
+		return config.ServiceMiniflux, nil
+	case "3":
+		return config.ServiceWallabag, nil
+	default:
+		return "", fmt.Errorf("invalid choice: %s", choice)
+	}
+}
+
 func GetSecretOrPrompt(secret, prompt string) (string, error) {
 	if secret != "" {
 		return secret, nil
@@ -30,8 +67,14 @@ func GetSecretOrPrompt(secret, prompt string) (string, error) {
 	return PromptSecret(prompt)
 }
 
-func LoginMiniflux(endpoint, apiKey string) error {
+// normalizeEndpoint removes trailing slashes and trims whitespace from endpoint URLs
+func normalizeEndpoint(endpoint string) string {
 	endpoint = strings.TrimSpace(endpoint)
+	return strings.TrimRight(endpoint, "/")
+}
+
+func LoginMiniflux(endpoint, apiKey string) error {
+	endpoint = normalizeEndpoint(endpoint)
 	apiKey = strings.TrimSpace(apiKey)
 
 	if err := miniflux.Validate(endpoint, apiKey); err != nil {
@@ -70,7 +113,7 @@ func saveMinifluxConfig(endpoint, apiKey string) error {
 }
 
 func LoginLinkding(endpoint, apiKey string) error {
-	endpoint = strings.TrimSpace(endpoint)
+	endpoint = normalizeEndpoint(endpoint)
 	apiKey = strings.TrimSpace(apiKey)
 
 	if err := linkding.Validate(endpoint, apiKey); err != nil {
@@ -109,7 +152,7 @@ func saveLinkdingConfig(endpoint, apiKey string) error {
 }
 
 func LoginWallabag(endpoint, clientID, clientSecret, username, password string) error {
-	endpoint = strings.TrimSpace(endpoint)
+	endpoint = normalizeEndpoint(endpoint)
 	clientID = strings.TrimSpace(clientID)
 	clientSecret = strings.TrimSpace(clientSecret)
 	username = strings.TrimSpace(username)
@@ -155,7 +198,57 @@ func saveWallabagConfig(cfg config.WallabagConfig) error {
 	return nil
 }
 
-func Logout(service string) error {
+func Login() error {
+	service, err := PromptServiceLoginTUI()
+	if err != nil {
+		return err
+	}
+
+	switch service {
+	case config.ServiceLinkding:
+		return loginLinkdingInteractive()
+	case config.ServiceMiniflux:
+		return loginMinifluxInteractive()
+	case config.ServiceWallabag:
+		return loginWallabagInteractive()
+	default:
+		return fmt.Errorf("unknown service: %s", service)
+	}
+}
+
+func loginLinkdingInteractive() error {
+	endpoint, apiKey, err := PromptLinkdingCredentialsTUI()
+	if err != nil {
+		return err
+	}
+
+	return LoginLinkding(endpoint, apiKey)
+}
+
+func loginMinifluxInteractive() error {
+	endpoint, apiKey, err := PromptMinifluxCredentialsTUI()
+	if err != nil {
+		return err
+	}
+
+	return LoginMiniflux(endpoint, apiKey)
+}
+
+func loginWallabagInteractive() error {
+	endpoint, clientID, clientSecret, username, password, err := PromptWallabagCredentialsTUI()
+	if err != nil {
+		return err
+	}
+
+	return LoginWallabag(endpoint, clientID, clientSecret, username, password)
+}
+
+func Logout() error {
+	service, err := PromptServiceLogoutTUI()
+	if err != nil {
+		return err
+	}
+
 	service = strings.ToLower(strings.TrimSpace(service))
 
 	switch service {

@@ -12,12 +12,11 @@ import (
 )
 
 type Options struct {
-	Login  LoginCommand  `command:"login" description:"Authenticate with a service"`
-	Logout LogoutCommand `command:"logout" description:"Remove credentials for a service"`
-	Link   LinkCommand   `command:"link" description:"Manage links (linkding)"`
-	Feed   FeedCommand   `command:"feed" description:"Manage feeds (miniflux)"`
-	Entry  EntryCommand  `command:"entry" description:"Manage feed entries (miniflux)"`
-	Page   PageCommand   `command:"page" description:"Manage pages (wallabag)"`
+	Auth  AuthCommand  `command:"auth" description:"Authentication commands"`
+	Link  LinkCommand  `command:"link" description:"Manage links (linkding)"`
+	Feed  FeedCommand  `command:"feed" description:"Manage feeds (miniflux)"`
+	Entry EntryCommand `command:"entry" description:"Manage feed entries (miniflux)"`
+	Page  PageCommand  `command:"page" description:"Manage pages (wallabag)"`
 }
 
 type BaseCommand struct {
@@ -29,38 +28,18 @@ type JSONOutputOptions struct {
 	JQ   string `long:"jq" value-name:"expression" description:"Filter JSON output using a jq expression (requires --json)"`
 }
 
-type LoginMinifluxCommand struct {
+type AuthLoginCommand struct {
 	BaseCommand
-	Endpoint string `long:"endpoint" description:"Miniflux endpoint URL" required:"yes"`
-	APIKey   string `long:"api-key" description:"API key"`
 }
 
-type LoginLinkdingCommand struct {
+type AuthLogoutCommand struct {
 	BaseCommand
-	Endpoint string `long:"endpoint" description:"Linkding endpoint URL" required:"yes"`
-	APIKey   string `long:"api-key" description:"API key"`
 }
 
-type LoginWallabagCommand struct {
+type AuthCommand struct {
 	BaseCommand
-	Endpoint     string `long:"endpoint" description:"Wallabag endpoint URL" required:"yes"`
-	ClientID     string `long:"client-id" description:"OAuth client ID" required:"yes"`
-	ClientSecret string `long:"client-secret" description:"OAuth client secret"`
-	Username     string `long:"username" description:"Username" required:"yes"`
-	Password     string `long:"password" description:"Password"`
-}
-
-type LoginCommand struct {
-	Miniflux LoginMinifluxCommand `command:"miniflux" description:"Authenticate with Miniflux"`
-	Linkding LoginLinkdingCommand `command:"linkding" description:"Authenticate with Linkding"`
-	Wallabag LoginWallabagCommand `command:"wallabag" description:"Authenticate with Wallabag"`
-}
-
-type LogoutCommand struct {
-	BaseCommand
-	Args struct {
-		Service string `positional-arg-name:"service" description:"Service name (miniflux, linkding, or wallabag)" required:"yes"`
-	} `positional-args:"yes"`
+	Login  AuthLoginCommand  `command:"login" description:"Authenticate with a service"`
+	Logout AuthLogoutCommand `command:"logout" description:"Remove credentials for a service"`
 }
 
 type FeedAddCommand struct {
@@ -155,38 +134,12 @@ type PageCommand struct {
 	List PageListCommand `command:"list" description:"List pages (wallabag)"`
 }
 
-func (c *LoginMinifluxCommand) Execute(_ []string) error {
-	apiKey, err := auth.GetSecretOrPrompt(c.APIKey, "API Key: ")
-	if err != nil {
-		return err
-	}
-	return auth.LoginMiniflux(c.Endpoint, apiKey)
+func (c *AuthLoginCommand) Execute(_ []string) error {
+	return auth.Login()
 }
 
-func (c *LoginLinkdingCommand) Execute(_ []string) error {
-	apiKey, err := auth.GetSecretOrPrompt(c.APIKey, "API Key: ")
-	if err != nil {
-		return err
-	}
-	return auth.LoginLinkding(c.Endpoint, apiKey)
-}
-
-func (c *LoginWallabagCommand) Execute(_ []string) error {
-	clientSecret, err := auth.GetSecretOrPrompt(c.ClientSecret, "Client Secret: ")
-	if err != nil {
-		return err
-	}
-
-	password, err := auth.GetSecretOrPrompt(c.Password, "Password: ")
-	if err != nil {
-		return err
-	}
-
-	return auth.LoginWallabag(c.Endpoint, c.ClientID, clientSecret, c.Username, password)
-}
-
-func (c *LogoutCommand) Execute(_ []string) error {
-	return auth.Logout(c.Args.Service)
+func (c *AuthLogoutCommand) Execute(_ []string) error {
+	return auth.Logout()
 }
 
 func (c *FeedAddCommand) Execute(_ []string) error {
@@ -281,9 +234,7 @@ func (c *PageListCommand) Execute(_ []string) error {
 	return c.App.ListPages(opts)
 }
 
-func (c *LogoutCommand) Usage() string {
-	return "<service>"
-}
+
 
 func (c *FeedAddCommand) Usage() string {
 	return "<url>"
@@ -333,10 +284,8 @@ func main() {
 	application := app.New(cfg)
 
 	opts := Options{}
-	opts.Login.Miniflux.App = application
-	opts.Login.Linkding.App = application
-	opts.Login.Wallabag.App = application
-	opts.Logout.App = application
+	opts.Auth.Login.App = application
+	opts.Auth.Logout.App = application
 	opts.Link.Add.App = application
 	opts.Link.List.App = application
 	opts.Feed.Add.App = application
@@ -348,7 +297,7 @@ func main() {
 
 	parser := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
 	parser.ShortDescription = "mlwcli - Manage Linkding, Miniflux, and Wallabag"
-	parser.LongDescription = "Manage Linkding, Miniflux, and Wallabag from terminal.\n\nExamples:\nmlwcli link add https://example.com --tags \"cool useful\"\nmlwcli link list\nmlwcli feed add https://blog.example.com/feed.xml\nmlwcli entry list\nmlwcli page add https://example.com/article --archive\nmlwcli page list"
+	parser.LongDescription = "Manage Linkding, Miniflux, and Wallabag from terminal.\n\nExamples:\nmlwcli auth login\nmlwcli auth logout\nmlwcli link add https://example.com --tags \"cool useful\"\nmlwcli link list\nmlwcli feed add https://blog.example.com/feed.xml\nmlwcli entry list\nmlwcli page add https://example.com/article --archive\nmlwcli page list"
 
 	if len(os.Args) == 1 {
 		parser.WriteHelp(os.Stdout)

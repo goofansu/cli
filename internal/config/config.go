@@ -37,7 +37,7 @@ func GetConfigPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "cli", "config.toml"), nil
+	return filepath.Join(home, ".config", "mlwcli", "auth.toml"), nil
 }
 
 func Load() (*Config, error) {
