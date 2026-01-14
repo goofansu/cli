@@ -234,8 +234,6 @@ func (c *PageListCommand) Execute(_ []string) error {
 	return c.App.ListPages(opts)
 }
 
-
-
 func (c *FeedAddCommand) Usage() string {
 	return "<url>"
 }
